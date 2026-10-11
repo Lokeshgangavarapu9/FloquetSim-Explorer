@@ -4,7 +4,7 @@ Specification: Master Engineering Specification v1.2, Subphase 10.1
 """
 
 try:
-    import pytest
+    import pytest  # type: ignore
 except ImportError:
     import contextlib
 

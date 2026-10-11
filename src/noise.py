@@ -7,7 +7,7 @@ Constructs Qiskit Aer NoiseModel parameterized by illustrative synthetic error r
 from typing import List, Optional
 
 try:
-    from qiskit_aer.noise import (
+    from qiskit_aer.noise import (  # type: ignore
         NoiseModel,
         depolarizing_error,
         thermal_relaxation_error,
