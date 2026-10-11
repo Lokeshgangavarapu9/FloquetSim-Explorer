@@ -1,274 +1,489 @@
 """
 FloquetSim Explorer - Section 04: Scientific Results
-Specification: Frontend UI Blueprint v1.2 FINAL, Page 5
-Present computed physics results in clear plots with tabs for Magnetization Dynamics (2D & 3D),
-Trotter Convergence, Noise Analysis, Processor Comparison, and Numerical Results.
+Specification: Nagrik Scientific Research Interface Design Reference
+Comprehensive quantum benchmark results: Spatiotemporal Heatmap & 3D Surface,
+Lie-Trotter error breakdown, noise sensitivity, and processor compilation overhead.
 """
 
 import streamlit as st
-import pandas as pd
 import numpy as np
+import pandas as pd
 import plotly.graph_objects as go
-from src.processors import load_processor
-from src.experiments import run_trotter_sweep, run_time_dynamics_sweep, run_full_ab_benchmark
-from src.classical_solver import simulate_exact_evolution
+from ui.theme import (
+    apply_plotly_theme,
+    COLOR_CANVAS,
+    COLOR_SURFACE,
+    COLOR_RAISED,
+    COLOR_BORDER,
+    COLOR_CYAN,
+    COLOR_AMBER,
+    COLOR_VIOLET,
+    COLOR_SUCCESS,
+    COLOR_ERROR,
+    COLOR_TEXT_PRIMARY,
+    COLOR_TEXT_SECONDARY,
+)
+from src.experiments import run_trotter_sweep, run_time_dynamics_sweep
 
 
 @st.cache_data
-def get_cached_time_data(proc_id: str, shots: int, seed: int, m: int, noise_scale: float):
+def get_cached_time_dynamics(proc_id: str, m_val: int, shots: int, noise_scale: float):
+    """Retrieve or compute time evolution sweep with site-resolved columns."""
+    t_list = [float(t) / 10.0 for t in range(1, 40)]  # 0.1 to 3.9 s (39 steps)
     return run_time_dynamics_sweep(
         processor_id=proc_id,
-        time_list=[float(t) for t in range(1, 11)],
-        trotter_step=m,
+        time_list=t_list,
+        trotter_step=m_val,
         shots=shots,
-        seed=seed,
+        seed=42,
         noise_scale=noise_scale,
     )
 
 
 @st.cache_data
-def get_cached_trotter_data(proc_id: str, shots: int, seed: int, t_val: float, noise_scale: float):
+def get_cached_trotter_sweep(proc_id: str, t_fixed: float, shots: int, noise_scale: float):
+    """Retrieve or compute Trotter step sweep m in [1..5]."""
     return run_trotter_sweep(
         processor_id=proc_id,
         trotter_steps_list=[1, 2, 3, 4, 5],
-        fixed_time=t_val,
+        fixed_time=t_fixed,
         shots=shots,
-        seed=seed,
+        seed=42,
         noise_scale=noise_scale,
     )
 
 
 def render_results_view():
     """Render Section 04: Scientific Results."""
-    st.markdown("## 📊 Scientific Results")
-    st.caption("Quantitative exploration of non-equilibrium quench dynamics, Lie-Trotter convergence, and architectural noise scaling.")
+    st.markdown("## 📊 Scientific Results & Benchmark Visualizations")
+    st.caption("Inspect rigorous numerical observables, spatiotemporal wave heatmaps, Trotter error trade-offs, and hardware routing overhead.")
 
-    # Global filter bar
-    filt_col1, filt_col2, filt_col3, filt_col4 = st.columns(4)
-    with filt_col1:
-        res_proc = st.selectbox(
-            "Target Processor",
-            options=["demo_processor_A", "demo_processor_B"],
-            format_func=lambda x: "Proc A (5Q Line)" if "A" in x else "Proc B (7Q Ring)",
+    # Top Control Bar
+    bar_c1, bar_c2, bar_c3, bar_c4 = st.columns([1.5, 1.2, 1.2, 1.2], gap="medium")
+    with bar_c1:
+        proc_options = ["demo_processor_A", "demo_processor_B"]
+        default_idx = 0 if st.session_state.get("selected_processor_id", "A") == "demo_processor_A" else 1
+        proc_id = st.selectbox(
+            "Processor Architecture",
+            options=proc_options,
+            index=default_idx,
+            format_func=lambda x: "Demo Processor A (5Q Line)" if "A" in x else "Demo Processor B (7Q Hex-Ring)",
             key="res_proc_select",
         )
-    with filt_col2:
-        res_m = st.selectbox("Trotter Step (m)", options=[1, 2, 3, 4, 5], index=2, key="res_m_select")
-    with filt_col3:
-        res_shots = st.selectbox("Shots", options=[1024, 2048, 4096], index=1, key="res_shots_select")
-    with filt_col4:
-        res_noise = st.slider("Noise Multiplier λ", 0.0, 3.0, 1.0, 0.25, key="res_noise_slider")
+        st.session_state["selected_processor_id"] = proc_id
 
-    # Fetch active data
-    try:
-        df_time = get_cached_time_data(res_proc, res_shots, 42, res_m, res_noise)
-        df_trotter = get_cached_trotter_data(res_proc, res_shots, 42, 5.0, res_noise)
-    except Exception as exc:
-        st.error(f"Error computing results: {exc}")
-        return
+    with bar_c2:
+        m_step = st.slider("Trotter Step m", 1, 5, 3, key="res_m_step")
 
-    # Tabs (Blueprint Page 5)
-    tab_dyn, tab_trotter, tab_noise, tab_proc, tab_num = st.tabs([
-        "📈 Magnetization Dynamics",
-        "⚖️ Trotter Comparison",
-        "📉 Noise Analysis",
-        "🔀 Processor Comparison",
-        "📋 Numerical Tables & Export",
+    with bar_c3:
+        noise_scale = st.slider("Noise Multiplier λ", 0.0, 3.0, 1.0, 0.25, key="res_noise_scale")
+
+    with bar_c4:
+        shots = st.selectbox("Shots", [1024, 2048, 4096], index=1, key="res_shots")
+
+    # The 5 Result Tabs
+    tab_dyn, tab_trot, tab_noise, tab_over, tab_tables = st.tabs([
+        "🌊 Magnetization Dynamics",
+        "📉 Lie-Trotter Error Analysis",
+        "⚡ Noise Sensitivity Profile",
+        "🏛️ Compilation Overhead",
+        "📋 Numerical Data Tables",
     ])
 
+    # -------------------------------------------------------------
+    # TAB 1: MAGNETIZATION DYNAMICS
+    # -------------------------------------------------------------
     with tab_dyn:
-        col_2d, col_3d = st.columns([1.1, 0.9], gap="large")
+        st.markdown("#### Spatiotemporal Spin Dynamics & Magnetization Trajectories")
+        df_dyn = get_cached_time_dynamics(proc_id, m_step, shots, noise_scale)
 
-        with col_2d:
-            st.markdown("#### Staggered Magnetization (2D Time-Series)")
-            fig_2d = go.Figure()
-            fig_2d.add_trace(go.Scatter(
-                x=df_time["time"],
-                y=df_time["exact_m"],
-                mode="lines",
-                name="Exact Classical (SciPy expm)",
-                line=dict(color="#1E293B", width=2.5),
-            ))
-            fig_2d.add_trace(go.Scatter(
-                x=df_time["time"],
-                y=df_time["ideal_m"],
-                mode="lines+markers",
-                name=f"Ideal Trotter (m={res_m})",
-                line=dict(color="#5267F2", dash="dash", width=2),
-                marker=dict(size=6),
-            ))
-            fig_2d.add_trace(go.Scatter(
-                x=df_time["time"],
-                y=df_time["noisy_m"],
-                error_y=dict(type="data", array=df_time["error_bar"], visible=True),
-                mode="markers",
-                name=f"Noisy Aer (λ={res_noise:.2f})",
-                marker=dict(color="#29B6D8", size=8),
-            ))
-            fig_2d.update_layout(
-                xaxis_title="Evolution Time (s)",
-                yaxis_title="Staggered Magnetization M_stag",
-                paper_bgcolor="#FFFFFF",
-                plot_bgcolor="#F8FAFC",
-                legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
-                margin=dict(l=40, r=20, t=30, b=40),
-                height=380,
+        display_c1, display_c2 = st.columns([1.2, 2.8])
+        with display_c1:
+            plot_type = st.radio(
+                "Visualization Type",
+                options=["2D Line Dynamics", "Spatiotemporal Heatmap", "3D Wave Surface"],
+                index=0,
+                key="res_plot_type",
             )
-            st.plotly_chart(fig_2d, use_container_width=True)
 
-        with col_3d:
-            st.markdown("#### 3D Spatiotemporal Magnetization Surface")
-            # Compute exact local site magnetizations across all time points
-            try:
-                time_pts = list(range(1, 11))
-                exact_all = simulate_exact_evolution(num_spins=4, time_points=[float(t) for t in time_pts])
-                local_z_matrix = np.array(exact_all["local_z"])  # shape: (10, 4)
-
-                fig_surf = go.Figure(data=[
-                    go.Surface(
-                        z=local_z_matrix,
-                        x=[0, 1, 2, 3],  # Qubit sites
-                        y=time_pts,      # Time points
-                        colorscale="Viridis",
-                        colorbar=dict(title="⟨Z_j⟩", len=0.7),
-                    )
-                ])
-                fig_surf.update_layout(
-                    scene=dict(
-                        xaxis_title="Qubit Site (j)",
-                        yaxis_title="Time (s)",
-                        zaxis_title="⟨Z_j⟩",
-                        bgcolor="#FFFFFF",
-                    ),
-                    paper_bgcolor="#FFFFFF",
-                    margin=dict(l=10, r=10, t=10, b=10),
-                    height=380,
+        if plot_type == "2D Line Dynamics":
+            with display_c2:
+                disp_mode = st.radio(
+                    "Display Metric",
+                    options=["Global Staggered ⟨M_stag⟩", "Site-Resolved ⟨Z_j⟩ (Q0..Q3)", "Composite All"],
+                    index=0,
+                    horizontal=True,
+                    key="res_disp_mode",
                 )
-                st.plotly_chart(fig_surf, use_container_width=True)
-            except Exception as e:
-                st.info(f"3D Surface unavailable: {e}")
 
-        st.markdown(
-            """
-            <div class="scientific-card-alt">
-                <b>Key Physical Insights:</b><br>
-                • Staggered magnetization exhibits non-equilibrium coherent oscillation under transverse field quench (hx = 1.0 rad/s).<br>
-                • Trotter discretization introduces algorithmic phase error bounded by BCH scaling O(t²/m).<br>
-                • Finite shot statistics (N_shots = %d) produce observable variance σ_M = √(1 - M²)/√N_shots.
-            </div>
-            """ % res_shots,
-            unsafe_allow_html=True,
-        )
+            fig_dyn = go.Figure()
 
-    with tab_trotter:
-        st.markdown("#### Lie-Trotter Error Convergence & Noise Trade-off")
-        fig_tr = go.Figure()
-        fig_tr.add_trace(go.Scatter(
-            x=df_trotter["trotter_steps"],
-            y=df_trotter["trotter_error"],
-            mode="lines+markers",
-            name="Ideal Discretization Error (|M_ideal - M_exact|)",
-            line=dict(color="#1E293B", dash="dash"),
-            marker=dict(symbol="circle", size=8),
-        ))
-        fig_tr.add_trace(go.Scatter(
-            x=df_trotter["trotter_steps"],
-            y=df_trotter["total_error"],
-            mode="lines+markers",
-            name="Total Noisy Simulation Error (|M_noisy - M_exact|)",
-            line=dict(color="#EF4444", width=2.5),
-            marker=dict(symbol="square", size=8),
-        ))
-        fig_tr.update_layout(
-            xaxis=dict(title="Trotter Discretization Steps (m)", tickvals=[1, 2, 3, 4, 5]),
-            yaxis_title="Absolute Observable Error",
-            paper_bgcolor="#FFFFFF",
-            plot_bgcolor="#F8FAFC",
-            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
-            margin=dict(l=40, r=20, t=30, b=40),
-            height=380,
-        )
-        st.plotly_chart(fig_tr, use_container_width=True)
+            if disp_mode == "Global Staggered ⟨M_stag⟩" or disp_mode == "Composite All":
+                fig_dyn.add_trace(
+                    go.Scatter(
+                        x=df_dyn["time"],
+                        y=df_dyn["exact_m"],
+                        mode="lines",
+                        line=dict(color=COLOR_TEXT_SECONDARY, width=2.5, dash="dash"),
+                        name="Exact Classical",
+                    )
+                )
+                fig_dyn.add_trace(
+                    go.Scatter(
+                        x=df_dyn["time"],
+                        y=df_dyn["ideal_m"],
+                        mode="lines+markers",
+                        line=dict(color=COLOR_CYAN, width=2),
+                        marker=dict(size=4),
+                        name="Ideal Trotter",
+                    )
+                )
+                fig_dyn.add_trace(
+                    go.Scatter(
+                        x=df_dyn["time"],
+                        y=df_dyn["noisy_m"],
+                        mode="lines+markers",
+                        line=dict(color=COLOR_AMBER, width=2),
+                        marker=dict(size=4),
+                        error_y=dict(
+                            type="data",
+                            array=df_dyn["error_bar"] if "error_bar" in df_dyn.columns else None,
+                            visible=True if "error_bar" in df_dyn.columns else False,
+                            color="rgba(255, 179, 0, 0.35)",
+                        ),
+                        name="Noisy Aer Shots",
+                    )
+                )
 
-        if not df_trotter.empty and "total_error" in df_trotter.columns:
-            opt_idx = df_trotter["total_error"].idxmin()
-            m_opt = int(df_trotter.loc[opt_idx, "trotter_steps"])
-            err_opt = df_trotter.loc[opt_idx, "total_error"]
-            st.info(
-                f"🏆 **Optimal Operating Point:** $m^* = {m_opt}$ minimizes total error to **{err_opt:.4f}**. "
-                f"Beyond $m^*$, circuit depth increases two-qubit gate decoherence faster than Trotter error decays."
+            if disp_mode == "Site-Resolved ⟨Z_j⟩ (Q0..Q3)" or disp_mode == "Composite All":
+                colors_sites = [COLOR_CYAN, COLOR_AMBER, COLOR_VIOLET, COLOR_SUCCESS]
+                for q_idx in range(4):
+                    col_key = f"noisy_z_{q_idx}"
+                    if col_key in df_dyn.columns:
+                        fig_dyn.add_trace(
+                            go.Scatter(
+                                x=df_dyn["time"],
+                                y=df_dyn[col_key],
+                                mode="lines",
+                                line=dict(color=colors_sites[q_idx], width=1.8),
+                                name=f"Q{q_idx} ⟨Z_{q_idx}⟩",
+                            )
+                        )
+
+            apply_plotly_theme(fig_dyn, height=440, title="Non-Equilibrium Spin Dynamics ⟨M(t)⟩")
+            fig_dyn.update_layout(
+                xaxis_title="Evolution Time t (seconds)",
+                yaxis_title="Magnetization Expectation",
+                yaxis=dict(range=[-1.05, 1.05]),
             )
+            st.plotly_chart(fig_dyn, use_container_width=True)
 
-    with tab_noise:
-        st.markdown("#### Synthetic Hardware Noise Model Characterization")
-        st.caption("Configured error rates from the competition starter guide. Note: All simulations use synthetic channels; zero physical IBM hardware is connected.")
+        elif plot_type == "Spatiotemporal Heatmap":
+            # Site-Resolved Heatmap: X = time, Y = spin site index, Z = local magnetization
+            z_matrix = []
+            for q_idx in range(4):
+                col_key = f"exact_z_{q_idx}"
+                if col_key in df_dyn.columns:
+                    z_matrix.append(df_dyn[col_key].values)
+                else:
+                    z_matrix.append(np.zeros(len(df_dyn)))
 
-        n_col1, n_col2, n_col3 = st.columns(3)
-        n_col1.metric("1Q Gate Error (p1)", f"{0.001 * res_noise:.4f}")
-        n_col2.metric("2Q Gate Error (p2)", f"{0.010 * res_noise:.4f}")
-        n_col3.metric("Readout Error [e01, e10]", f"[{0.01*res_noise:.3f}, {0.02*res_noise:.3f}]")
+            fig_hm = go.Figure(
+                data=go.Heatmap(
+                    z=z_matrix,
+                    x=df_dyn["time"].values,
+                    y=["Site Q0", "Site Q1", "Site Q2", "Site Q3"],
+                    colorscale="Tealrose",
+                    zmin=-1.0,
+                    zmax=1.0,
+                    colorbar=dict(
+                        title="Polarization ⟨Z_j⟩",
+                        titlefont=dict(color=COLOR_TEXT_PRIMARY, size=11),
+                        tickfont=dict(color=COLOR_TEXT_SECONDARY, size=10),
+                    ),
+                    hovertemplate="Time: %{x:.2f} s<br>Spin Site: %{y}<br>⟨Z_j⟩: %{z:+.3f}<extra></extra>",
+                )
+            )
+            apply_plotly_theme(fig_hm, height=360, title="Spatiotemporal Spin Polarization Heatmap ⟨Z(j, t)⟩")
+            fig_hm.update_layout(
+                xaxis_title="Evolution Time t (seconds)",
+                yaxis_title="Lattice Site",
+            )
+            st.plotly_chart(fig_hm, use_container_width=True)
+
+        elif plot_type == "3D Wave Surface":
+            # 3D Spatiotemporal Wave Surface: X = time, Y = spin site index, Z = local magnetization
+            z_matrix = []
+            for q_idx in range(4):
+                col_key = f"exact_z_{q_idx}"
+                if col_key in df_dyn.columns:
+                    z_matrix.append(df_dyn[col_key].values)
+                else:
+                    z_matrix.append(np.zeros(len(df_dyn)))
+
+            z_surface = np.array(z_matrix)
+            x_times = df_dyn["time"].values
+            y_sites = np.array([0, 1, 2, 3])
+
+            fig_surf = go.Figure(
+                data=[
+                    go.Surface(
+                        z=z_surface,
+                        x=x_times,
+                        y=y_sites,
+                        colorscale="Tealrose",
+                        cmin=-1.0,
+                        cmax=1.0,
+                        contours=dict(
+                            z=dict(
+                                show=True,
+                                usecolormap=True,
+                                highlightcolor="#00D5E8",
+                                project=dict(z=True),
+                            )
+                        ),
+                        colorbar=dict(
+                            title="⟨Z_j⟩",
+                            titlefont=dict(color=COLOR_TEXT_PRIMARY, size=11),
+                            tickfont=dict(color=COLOR_TEXT_SECONDARY, size=10),
+                        ),
+                        hovertemplate="Time: %{x:.2f} s<br>Site: Q%{y}<br>⟨Z_j⟩: %{z:+.3f}<extra></extra>",
+                    )
+                ]
+            )
+            fig_surf.update_layout(
+                paper_bgcolor=COLOR_CANVAS,
+                scene=dict(
+                    bgcolor=COLOR_CANVAS,
+                    xaxis=dict(
+                        title="Time t (s)",
+                        gridcolor=COLOR_BORDER,
+                        tickfont=dict(color=COLOR_TEXT_SECONDARY, size=9),
+                        titlefont=dict(color=COLOR_TEXT_PRIMARY, size=11),
+                    ),
+                    yaxis=dict(
+                        title="Qubit Site j",
+                        gridcolor=COLOR_BORDER,
+                        tickvals=[0, 1, 2, 3],
+                        ticktext=["Q0", "Q1", "Q2", "Q3"],
+                        tickfont=dict(color=COLOR_TEXT_SECONDARY, size=9),
+                        titlefont=dict(color=COLOR_TEXT_PRIMARY, size=11),
+                    ),
+                    zaxis=dict(
+                        title="Polarization ⟨Z_j⟩",
+                        gridcolor=COLOR_BORDER,
+                        range=[-1.05, 1.05],
+                        tickfont=dict(color=COLOR_TEXT_SECONDARY, size=9),
+                        titlefont=dict(color=COLOR_TEXT_PRIMARY, size=11),
+                    ),
+                    camera=dict(eye=dict(x=1.75, y=-1.5, z=1.1)),
+                ),
+                margin=dict(l=0, r=0, t=20, b=0),
+                height=460,
+            )
+            st.plotly_chart(fig_surf, use_container_width=True)
+
+    # -------------------------------------------------------------
+    # TAB 2: LIE-TROTTER ERROR ANALYSIS
+    # -------------------------------------------------------------
+    with tab_trot:
+        st.markdown("#### Lie-Trotter Discretization vs Hardware Noise Accumulation")
+        df_trot = get_cached_trotter_sweep(proc_id, 5.0, shots, noise_scale)
+
+        # Robust column resolution
+        col_tot = "total_error" if "total_error" in df_trot.columns else "error_total"
+        col_trot = "trotter_error" if "trotter_error" in df_trot.columns else "error_trotter"
+        col_noise = "noise_error" if "noise_error" in df_trot.columns else "error_noise"
+
+        best_m = int(df_trot.loc[df_trot[col_tot].idxmin()]["trotter_steps"])
+        min_err = float(df_trot[col_tot].min())
 
         st.markdown(
-            """
-            <div class="scientific-card">
-                <b>Noise Channel Mechanics:</b><br>
-                1. <b>Single-Qubit Depolarizing:</b> Applied to basis gates <code>x, sx</code> with error rate <code>p1 = 0.001 × λ</code>.<br>
-                2. <b>Two-Qubit Depolarizing:</b> Applied to entangling gate <code>cx</code> with error rate <code>p2 = 0.010 × λ</code>.<br>
-                3. <b>Readout Assignment Matrix:</b> Row-stochastic confusion matrix <code>[[1 - p10, p10], [p01, 1 - p01]]</code> where row sums strictly equal 1.0 within numerical precision.
+            f"""
+            <div class="banner-official">
+                <b>Optimal Step Count Identified:</b> Minimal total error occurs at <b>m* = {best_m}</b> (Total error ϵ = <b>{min_err:.4f}</b>).<br>
+                For m &lt; {best_m}, algorithmic truncation error dominates: ϵ ~ O(t²/m). For m &gt; {best_m}, accumulated two-qubit gate noise dominates.
             </div>
             """,
             unsafe_allow_html=True,
         )
 
-    with tab_proc:
-        st.markdown("#### Comparative Architectural Benchmark (Processor A vs B)")
-        try:
-            ab_res = run_full_ab_benchmark(shots=res_shots, seed=42)
-            df_ab = ab_res["circuit_metrics"]
+        fig_err = go.Figure()
 
-            fig_cmp = go.Figure()
-            for proc, grp in df_ab.groupby("processor"):
-                label = "Proc A (5Q Line)" if "A" in proc else "Proc B (7Q Ring)"
-                color = "#5267F2" if "A" in proc else "#8B5CF6"
-                fig_cmp.add_trace(go.Scatter(
-                    x=grp["trotter_steps"],
-                    y=grp["depth"],
-                    mode="lines+markers",
-                    name=f"{label} - Depth",
-                    line=dict(color=color),
-                ))
-            fig_cmp.update_layout(
-                xaxis=dict(title="Trotter Steps (m)", tickvals=[1, 2, 3, 4, 5]),
-                yaxis_title="Transpiled Circuit Depth",
-                paper_bgcolor="#FFFFFF",
-                plot_bgcolor="#F8FAFC",
-                height=350,
+        # Algorithmic error curve
+        fig_err.add_trace(
+            go.Scatter(
+                x=df_trot["trotter_steps"],
+                y=df_trot[col_trot],
+                mode="lines+markers",
+                line=dict(color=COLOR_CYAN, width=2.5),
+                marker=dict(size=6),
+                name="Algorithmic Trotter Error",
             )
-            st.plotly_chart(fig_cmp, use_container_width=True)
-        except Exception as e:
-            st.info(f"Processor comparison unavailable: {e}")
+        )
 
-    with tab_num:
-        st.markdown("#### Tabular Outputs & Machine-Readable Data")
-        try:
-            st.dataframe(df_trotter, use_container_width=True)
-        except Exception:
-            st.table(df_trotter)
+        # Accumulated noise error curve
+        fig_err.add_trace(
+            go.Scatter(
+                x=df_trot["trotter_steps"],
+                y=df_trot[col_noise],
+                mode="lines+markers",
+                line=dict(color=COLOR_AMBER, width=2.5),
+                marker=dict(size=6),
+                name="Accumulated Gate Noise Error",
+            )
+        )
 
-        d_col1, d_col2 = st.columns(2)
-        with d_col1:
-            st.download_button(
-                "📥 Download Trotter Results CSV",
-                data=df_trotter.to_csv(index=False).encode("utf-8"),
-                file_name="trotter_sweep_results.csv",
-                mime="text/csv",
-                use_container_width=True,
+        # Total combined error
+        fig_err.add_trace(
+            go.Scatter(
+                x=df_trot["trotter_steps"],
+                y=df_trot[col_tot],
+                mode="lines+markers",
+                line=dict(color=COLOR_VIOLET, width=3, dash="dot"),
+                marker=dict(size=8),
+                name="Total Empirical Error ϵ",
             )
-        with d_col2:
-            st.download_button(
-                "📥 Download Time Evolution CSV",
-                data=df_time.to_csv(index=False).encode("utf-8"),
-                file_name="time_evolution_results.csv",
-                mime="text/csv",
-                use_container_width=True,
+        )
+
+        # Optimal callout marker
+        fig_err.add_trace(
+            go.Scatter(
+                x=[best_m],
+                y=[min_err],
+                mode="markers+text",
+                marker=dict(color="#10B981", size=14, symbol="star"),
+                text=[f"Optimal m*={best_m}"],
+                textposition="top center",
+                textfont=dict(color="#10B981", size=12, family="JetBrains Mono, monospace"),
+                name="Optimal m*",
+                showlegend=False,
             )
+        )
+
+        apply_plotly_theme(fig_err, height=420, title="Trotter Error Competition Trade-Off Curve")
+        fig_err.update_layout(
+            xaxis_title="Trotter Steps m",
+            yaxis_title="Absolute Error |ΔM|",
+            xaxis=dict(dtick=1),
+        )
+        st.plotly_chart(fig_err, use_container_width=True)
+
+    # -------------------------------------------------------------
+    # TAB 3: NOISE SENSITIVITY PROFILE
+    # -------------------------------------------------------------
+    with tab_noise:
+        st.markdown("#### Hardware Noise Sensitivity & Error Scaling")
+        st.caption("Quantifies fidelity degradation across noise scale multipliers λ ∈ [0.0, 3.0].")
+
+        noise_scales = [0.0, 0.5, 1.0, 1.5, 2.0]
+        noise_rows = []
+        for n_s in noise_scales:
+            df_n = get_cached_trotter_sweep(proc_id, 5.0, shots, n_s)
+            c_tot = "total_error" if "total_error" in df_n.columns else "error_total"
+            c_noise = "noise_error" if "noise_error" in df_n.columns else "error_noise"
+            row_best = df_n.loc[df_n["trotter_steps"] == m_step].iloc[0]
+            noise_rows.append({
+                "noise_scale": n_s,
+                "error_total": row_best[c_tot],
+                "error_noise": row_best[c_noise],
+            })
+        df_noise_scan = pd.DataFrame(noise_rows)
+
+        fig_noise = go.Figure()
+        fig_noise.add_trace(
+            go.Scatter(
+                x=df_noise_scan["noise_scale"],
+                y=df_noise_scan["error_total"],
+                mode="lines+markers",
+                line=dict(color=COLOR_CYAN, width=2.5),
+                marker=dict(size=7),
+                name=f"Total Error at m={m_step}",
+            )
+        )
+        fig_noise.add_trace(
+            go.Scatter(
+                x=df_noise_scan["noise_scale"],
+                y=df_noise_scan["error_noise"],
+                mode="lines+markers",
+                line=dict(color=COLOR_AMBER, width=2),
+                marker=dict(size=7),
+                name=f"Noise Contribution at m={m_step}",
+            )
+        )
+        apply_plotly_theme(fig_noise, height=380, title="Noise Sensitivity Profile vs Multiplier λ")
+        fig_noise.update_layout(
+            xaxis_title="Noise Scale Factor λ (0 = Ideal, 1 = Baseline)",
+            yaxis_title="Error Magnitude",
+        )
+        st.plotly_chart(fig_noise, use_container_width=True)
+
+    # -------------------------------------------------------------
+    # TAB 4: COMPILATION OVERHEAD
+    # -------------------------------------------------------------
+    with tab_over:
+        st.markdown("#### Hardware Routing & SWAP Gate Overhead")
+        st.caption("Comparison of native 2Q CNOT gates vs transpiler-inserted routing SWAP gates across architectures.")
+
+        df_trot_a = get_cached_trotter_sweep("demo_processor_A", 5.0, shots, noise_scale)
+        df_trot_b = get_cached_trotter_sweep("demo_processor_B", 5.0, shots, noise_scale)
+
+        m_idx = m_step
+        row_a = df_trot_a.loc[df_trot_a["trotter_steps"] == m_idx].iloc[0]
+        row_b = df_trot_b.loc[df_trot_b["trotter_steps"] == m_idx].iloc[0]
+
+        cnot_a = row_a["count_2q"] if "count_2q" in row_a else row_a.get("cnot_count", 0)
+        swap_a = row_a["count_swap"] if "count_swap" in row_a else row_a.get("swap_count", 0)
+        cnot_b = row_b["count_2q"] if "count_2q" in row_b else row_b.get("cnot_count", 0)
+        swap_b = row_b["count_swap"] if "count_swap" in row_b else row_b.get("swap_count", 0)
+
+        fig_bar = go.Figure()
+        fig_bar.add_trace(
+            go.Bar(
+                name="Native Interaction CNOTs",
+                x=["Processor A (5Q Line)", "Processor B (7Q Hex)"],
+                y=[max(0, cnot_a - 3 * swap_a), max(0, cnot_b - 3 * swap_b)],
+                marker_color=COLOR_CYAN,
+            )
+        )
+        fig_bar.add_trace(
+            go.Bar(
+                name="Routing SWAP Gates (×3 CNOTs)",
+                x=["Processor A (5Q Line)", "Processor B (7Q Hex)"],
+                y=[3 * swap_a, 3 * swap_b],
+                marker_color=COLOR_AMBER,
+            )
+        )
+        apply_plotly_theme(fig_bar, height=380, title=f"2Q Gate Decomposition at m = {m_step}")
+        fig_bar.update_layout(
+            barmode="stack",
+            yaxis_title="Total 2Q CNOT Count",
+        )
+        st.plotly_chart(fig_bar, use_container_width=True)
+
+    # -------------------------------------------------------------
+    # TAB 5: NUMERICAL DATA TABLES & CSV EXPORT
+    # -------------------------------------------------------------
+    with tab_tables:
+        st.markdown("#### Tabular Numerical Results & CSV Export")
+        st.markdown("##### 1. Trotter Discretization Sweep (m = 1..5)")
+        st.dataframe(df_trot, use_container_width=True)
+        csv_trot = df_trot.to_csv(index=False).encode("utf-8")
+        st.download_button(
+            "📥 Download trotter_sweep_results.csv",
+            data=csv_trot,
+            file_name="trotter_sweep_results.csv",
+            mime="text/csv",
+            key="dl_trot_csv",
+        )
+
+        st.markdown("##### 2. Time Evolution Trajectory Dataset")
+        st.dataframe(df_dyn.head(15), use_container_width=True)
+        csv_dyn = df_dyn.to_csv(index=False).encode("utf-8")
+        st.download_button(
+            "📥 Download time_dynamics_results.csv",
+            data=csv_dyn,
+            file_name="time_dynamics_results.csv",
+            mime="text/csv",
+            key="dl_dyn_csv",
+        )

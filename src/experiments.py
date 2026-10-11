@@ -156,7 +156,7 @@ def run_time_dynamics_sweep(
         )
 
         sv = simulate_ideal_statevector(qc_logical)
-        _, _, ideal_m = expectation_from_statevector(sv, num_spins=4)
+        ideal_local_z, _, ideal_m = expectation_from_statevector(sv, num_spins=4)
 
         noisy_counts = simulate_noisy_shots(
             circuit=qc_transpiled,
@@ -164,11 +164,12 @@ def run_time_dynamics_sweep(
             shots=shots,
             seed=seed,
         )
-        _, _, noisy_m = expectation_from_counts(noisy_counts, num_spins=4)
+        noisy_local_z, _, noisy_m = expectation_from_counts(noisy_counts, num_spins=4)
 
         err_bar = calculate_shot_uncertainty(noisy_m, shots)
+        exact_local_z = exact_res["local_z"][idx]
 
-        rows.append({
+        row = {
             "processor": config.processor_id,
             "time": t,
             "trotter_steps": trotter_step,
@@ -176,7 +177,13 @@ def run_time_dynamics_sweep(
             "ideal_m": ideal_m,
             "noisy_m": noisy_m,
             "error_bar": err_bar,
-        })
+        }
+        for q in range(4):
+            row[f"exact_z_{q}"] = float(exact_local_z[q])
+            row[f"ideal_z_{q}"] = float(ideal_local_z[q])
+            row[f"noisy_z_{q}"] = float(noisy_local_z[q])
+
+        rows.append(row)
 
     return pd.DataFrame(rows)
 
