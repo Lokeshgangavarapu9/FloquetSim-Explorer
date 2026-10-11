@@ -1,0 +1,11 @@
+processor,trotter_steps,depth,count_1q,count_2q,count_swap,total_gates
+demo_processor_A,1,26,28,14,0,42
+demo_processor_A,2,54,52,34,0,86
+demo_processor_A,3,82,76,54,0,130
+demo_processor_A,4,110,100,74,0,174
+demo_processor_A,5,130,124,91,0,215
+demo_processor_B,1,21,28,14,0,42
+demo_processor_B,2,49,52,28,0,80
+demo_processor_B,3,70,76,45,0,121
+demo_processor_B,4,98,100,62,0,162
+demo_processor_B,5,122,124,79,0,203

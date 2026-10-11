@@ -13,6 +13,7 @@ networkx>=3.0,<3.3
 
 # Data Handling & Publication Visualization
 pandas>=2.0.0,<2.3.0
+pyarrow>=14.0.0,<19.0.0
 matplotlib>=3.7.0,<3.9.0
 seaborn>=0.12.0,<0.14.0
 plotly>=5.18.0,<5.22.0

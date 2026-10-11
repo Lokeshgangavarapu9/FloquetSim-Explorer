@@ -95,13 +95,13 @@ def main():
     print("\n[2/4] Exporting standardized CSV tables to results/tables/...")
     table_paths = save_tables(results, output_dir=args.output_dir)
     for name, p in table_paths.items():
-        print(f"  ✓ Saved {name}: {p}")
+        print(f"  [OK] Saved {name}: {p}")
 
     # 3. Render Publication Figures
     print("\n[3/4] Rendering 300 DPI publication figures to results/figures/...")
     fig_paths = render_figures(results, output_dir=args.output_dir)
     for name, p in fig_paths.items():
-        print(f"  ✓ Rendered {name}: {p}")
+        print(f"  [OK] Rendered {name}: {p}")
 
     # 4. Generate Provenance Manifest
     print("\n[4/4] Recording execution provenance to results/provenance.json...")
@@ -110,7 +110,7 @@ def main():
         seed_transpiler=args.seed,
         seed_simulator=args.seed,
     )
-    print(f"  ✓ Provenance recorded (Qiskit v{manifest['environment']['qiskit_version']})")
+    print(f"  [OK] Provenance recorded (Qiskit v{manifest['environment']['qiskit_version']})")
 
     elapsed = time.time() - start_time
     print("\n" + "=" * 70)

@@ -250,7 +250,10 @@ def render_results_view():
 
     with tab_num:
         st.markdown("#### Tabular Outputs & Machine-Readable Data")
-        st.dataframe(df_trotter, use_container_width=True)
+        try:
+            st.dataframe(df_trotter, use_container_width=True)
+        except Exception:
+            st.table(df_trotter)
 
         d_col1, d_col2 = st.columns(2)
         with d_col1:

@@ -87,7 +87,10 @@ def render_reports_view():
                     f_path = os.path.join(tables_dir, f_name)
                     df_item = pd.read_csv(f_path)
                     with st.expander(f"📊 {f_name} ({len(df_item)} rows)"):
-                        st.dataframe(df_item.head(10), use_container_width=True)
+                        try:
+                            st.dataframe(df_item.head(10), use_container_width=True)
+                        except Exception:
+                            st.table(df_item.head(10))
                         st.download_button(
                             f"Download {f_name}",
                             data=open(f_path, "rb").read(),

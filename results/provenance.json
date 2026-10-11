@@ -1,0 +1,31 @@
+{
+  "project": "FloquetSim Explorer",
+  "version": "1.2.0",
+  "timestamp_utc": "2026-10-11T09:56:18.450311+00:00",
+  "environment": {
+    "python_version": "3.11.9",
+    "platform": "Windows-10-10.0.26300-SP0",
+    "qiskit_version": "1.1.2",
+    "qiskit_aer_version": "0.17.2",
+    "numpy_version": "1.26.4",
+    "scipy_version": "1.13.1",
+    "pandas_version": "2.2.3"
+  },
+  "seeds": {
+    "seed_transpiler": 42,
+    "seed_simulator": 42
+  },
+  "processors": [
+    "demo_processor_A",
+    "demo_processor_B"
+  ],
+  "artifacts_generated": [
+    "results/tables/circuit_metrics_comparison.csv",
+    "results/tables/trotter_sweep_results.csv",
+    "results/tables/time_evolution_results.csv",
+    "results/figures/fig1_trotter_noise_tradeoff.png",
+    "results/figures/fig2_magnetization_dynamics.png",
+    "results/figures/fig3_circuit_overhead.png",
+    "results/figures/fig4_fourier_spectrum.png"
+  ]
+}
