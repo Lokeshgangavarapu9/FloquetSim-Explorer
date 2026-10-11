@@ -11,7 +11,7 @@
 
 FloquetSim Explorer enforces a unified single-engine architecture where both the headless CLI (`main.py`) and the interactive Streamlit dashboard (`app.py`) import the identical underlying scientific packages:
 
-```
+```text
           CLI Entrypoint                     Interactive Dashboard
            (`main.py`)                             (`app.py`)
                 │                                      │
