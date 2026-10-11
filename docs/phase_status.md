@@ -1,0 +1,17 @@
+# FloquetSim Explorer — Phase Execution Tracker
+
+- [x] Phase 0: Resource Audit and Research Corrections (Subphases 0.1 – 0.6)
+- [x] Phase 1: Project Definition and Competition Requirements (Subphases 1.1 – 1.5)
+- [x] Phase 2: Scientific Model and Mathematical Formulation (Subphases 2.1 – 2.8)
+- [x] Phase 3: Experimental Design and Processor Configuration (Subphases 3.1 – 3.6)
+- [x] Phase 4: Initial README Preparation (Subphases 4.1 – 4.5)
+- [x] Phase 5: Architecture and Development Environment (Subphases 5.1 – 5.5)
+- [x] Phase 6: Scientific Kernel Development (Subphases 6.1 – 6.6)
+- [x] Phase 7: Processor Loading and Circuit Transpilation (Subphases 7.1 – 7.6)
+- [x] Phase 8: Noisy Simulation and Experimental Sweeps (Subphases 8.1 – 8.7)
+- [x] Phase 9: Results Generation and Scientific Reporting (Subphases 9.1 – 9.5)
+- [x] Phase 10: Core Testing and Validation (Subphases 10.1 – 10.6)
+- [x] Phase 11: Optional Dashboard Development (Subphases 11.1 – 11.6)
+- [x] Phase 12: End-to-End Integration (Subphases 12.1 – 12.6)
+- [x] Phase 13: Final Documentation and Reproducibility (Subphases 13.1 – 13.6)
+- [x] Phase 14: Submission Audit (Subphases 14.1 – 14.7)

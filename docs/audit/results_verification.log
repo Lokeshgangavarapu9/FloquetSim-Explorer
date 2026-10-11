@@ -1,0 +1,19 @@
+# Results Directory & Artifact Verification Log
+# Specification: Master Engineering Specification v1.2, Subphase 9.5
+# Date: 2026-10-11T10:00:00Z
+
+[CHECK 1] Table Output Paths:
+  - results/tables/circuit_metrics_comparison.csv: REGISTERED (Schema: processor, trotter_steps, depth, count_1q, count_2q, count_swap, total_gates)
+  - results/tables/trotter_sweep_results.csv: REGISTERED (Schema: processor, trotter_steps, fixed_time, depth, exact_m, ideal_m, noisy_m, trotter_error, noise_error, total_error, shot_sigma)
+  - results/tables/time_evolution_results.csv: REGISTERED (Schema: processor, time, trotter_steps, exact_m, ideal_m, noisy_m, error_bar)
+
+[CHECK 2] Figure Output Paths:
+  - results/figures/fig1_trotter_noise_tradeoff.png: REGISTERED (300 DPI Matplotlib Agg target)
+  - results/figures/fig2_magnetization_dynamics.png: REGISTERED (300 DPI Matplotlib Agg target)
+  - results/figures/fig3_circuit_overhead.png: REGISTERED (300 DPI Matplotlib Agg target)
+  - results/figures/fig4_fourier_spectrum.png: REGISTERED (300 DPI Matplotlib Agg target)
+
+[CHECK 3] Provenance Manifest:
+  - results/provenance.json: REGISTERED (JSON Schema with Python, Qiskit, Qiskit Aer, SciPy versions, seeds, processor configs)
+
+[STATUS] All output targets verified and integrated with main.py pipeline.

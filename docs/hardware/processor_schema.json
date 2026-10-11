@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "QuantumProcessorConfiguration",
+  "description": "Standardized schema for quantum processor hardware definitions in FloquetSim Explorer.",
+  "type": "object",
+  "required": [
+    "processor_id",
+    "name",
+    "num_qubits",
+    "coupling_map",
+    "basis_gates",
+    "is_official",
+    "hardware_provenance"
+  ],
+  "properties": {
+    "processor_id": {
+      "type": "string",
+      "description": "Unique identifier for the processor."
+    },
+    "name": {
+      "type": "string",
+      "description": "Human-readable processor name."
+    },
+    "num_qubits": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Total number of physical qubits."
+    },
+    "coupling_map": {
+      "type": "array",
+      "description": "List of directed or undirected physical coupling edges [q1, q2].",
+      "items": {
+        "type": "array",
+        "minItems": 2,
+        "maxItems": 2,
+        "items": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "basis_gates": {
+      "type": "array",
+      "description": "List of native hardware basis gate names.",
+      "items": {
+        "type": "string"
+      }
+    },
+    "ports": {
+      "type": "array",
+      "description": "Designated I/O or boundary physical qubit ports.",
+      "items": {
+        "type": "integer"
+      }
+    },
+    "is_official": {
+      "type": "boolean",
+      "description": "Flag indicating whether configuration is an official organizer release."
+    },
+    "hardware_provenance": {
+      "type": "string",
+      "description": "Detailed explanation of configuration source and authenticity."
+    },
+    "qubit_properties": {
+      "type": "object",
+      "description": "Optional physical qubit properties such as T1 and T2 coherence times."
+    },
+    "noise": {
+      "type": "object",
+      "description": "Parameters for synthetic or measured hardware noise model.",
+      "properties": {
+        "type": { "type": "string" },
+        "gate_error_1q": { "type": "number", "minimum": 0.0, "maximum": 1.0 },
+        "gate_error_2q": { "type": "number", "minimum": 0.0, "maximum": 1.0 },
+        "readout_error": {
+          "type": "array",
+          "items": { "type": "number", "minimum": 0.0, "maximum": 1.0 }
+        },
+        "t1_us": { "type": "number", "minimum": 0.0 },
+        "t2_us": { "type": "number", "minimum": 0.0 },
+        "gate_time_1q_ns": { "type": "number", "minimum": 0.0 },
+        "gate_time_2q_ns": { "type": "number", "minimum": 0.0 }
+      }
+    }
+  }
+}

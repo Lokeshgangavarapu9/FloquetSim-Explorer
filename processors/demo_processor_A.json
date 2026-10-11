@@ -1,0 +1,25 @@
+{
+  "processor_id": "demo_processor_A",
+  "name": "5-Qubit Linear Demonstration Baseline",
+  "num_qubits": 5,
+  "coupling_map": [
+    [0, 1],
+    [1, 2],
+    [2, 3],
+    [3, 4]
+  ],
+  "basis_gates": ["rz", "sx", "x", "cx"],
+  "ports": [0, 4],
+  "is_official": false,
+  "hardware_provenance": "Provisional demonstration topology representing historical 2016-era cloud processors for SRM AP Qiskit Fall Fest 2026.",
+  "noise": {
+    "type": "depolarizing_synthetic",
+    "gate_error_1q": 0.001,
+    "gate_error_2q": 0.01,
+    "readout_error": [0.01, 0.02],
+    "t1_us": 100.0,
+    "t2_us": 80.0,
+    "gate_time_1q_ns": 35.0,
+    "gate_time_2q_ns": 300.0
+  }
+}

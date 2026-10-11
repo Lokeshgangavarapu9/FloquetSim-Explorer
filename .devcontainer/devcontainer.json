@@ -1,0 +1,28 @@
+{
+  "name": "FloquetSim Explorer - Qiskit 1.x & Codespaces Environment",
+  "image": "mcr.microsoft.com/devcontainers/python:3.10-bullseye",
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {}
+  },
+  "postCreateCommand": "pip install --upgrade pip && pip install -r requirements.txt",
+  "forwardPorts": [8501],
+  "portsAttributes": {
+    "8501": {
+      "label": "FloquetSim Explorer Dashboard (Streamlit)",
+      "onAutoForward": "openBrowser"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "python.defaultInterpreterPath": "/usr/local/bin/python",
+        "python.testing.pytestEnabled": true,
+        "python.testing.pytestArgs": ["tests"]
+      },
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance"
+      ]
+    }
+  }
+}

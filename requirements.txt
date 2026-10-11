@@ -1,0 +1,25 @@
+# FloquetSim Explorer - Pinned Python Dependencies
+# Specification: Master Engineering Specification v1.2, Subphase 5.4
+# Compatible with Python 3.10 and 3.11 in GitHub Codespaces
+
+# Core Quantum Computing Stack (Qiskit 1.x Architecture)
+qiskit>=1.0.2,<1.2.0
+qiskit-aer>=0.14.0
+
+# Scientific Computing & Dense Matrix Math
+numpy>=1.23.0,<2.0.0
+scipy>=1.10.0,<1.14.0
+networkx>=3.0,<3.3
+
+# Data Handling & Publication Visualization
+pandas>=2.0.0,<2.3.0
+matplotlib>=3.7.0,<3.9.0
+seaborn>=0.12.0,<0.14.0
+plotly>=5.18.0,<5.22.0
+
+# Interactive Dashboard Framework (Single Runtime)
+streamlit>=1.32.0,<1.36.0
+
+# Testing & Quality Verification Suite
+pytest>=7.4.0,<8.3.0
+pytest-cov>=4.1.0
