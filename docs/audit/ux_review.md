@@ -10,6 +10,7 @@
 ## 1. Visual Hierarchy & Aesthetic Standards
 
 FloquetSim Explorer avoids dark "gamer" aesthetics, glowing neon effects, and unnecessary widget clutter, adhering strictly to a research-grade scientific presentation:
+
 - **Canvas & Background:** Pristine white background (`#ffffff`) with subtle light slate paneling (`#f8fafc`).
 - **Typography:** Clean system sans-serif hierarchy; primary body text in dark charcoal (`#0f172a`), muted subheadings in slate (`#64748b`).
 - **Accents:** Restrained cobalt blue (`#2563eb`) for interactive controls and primary data series; crimson red (`#dc2626`) for hardware noise curves.

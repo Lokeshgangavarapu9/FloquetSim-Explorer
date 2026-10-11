@@ -30,5 +30,6 @@ In accordance with Page 5 of the official Hackathon Participant Instructions (**
 
 ---
 
-## Audit Sign-off:
+## Audit Sign-off
+
 All 12 items on the official organizer checklist are verified and fulfilled.

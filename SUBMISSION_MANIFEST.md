@@ -27,7 +27,7 @@
 | **Tabular Benchmark Results** | `results/tables/` | Machine-readable CSV outputs (`circuit_metrics_comparison.csv`, etc.). |
 | **Publication Figures** | `results/figures/` | High-resolution 300 DPI comparative plots (`fig1` through `fig4`). |
 | **Repository README** | `README.md` | Comprehensive landing page with quickstart, architecture, and disclaimers. |
-| **Scientific Research Report**| `report.md` | Publication-grade academic paper detailing model, methods, and results. |
+| **Scientific Research Report** | `report.md` | Publication-grade academic paper detailing model, methods, and results. |
 | **Environment Specification** | `requirements.txt` | Pinned, reproducible dependencies (Qiskit 1.0+ architecture). |
 | **Cloud Dev Container** | `.devcontainer/devcontainer.json` | 1-click cloud sandbox configuration for GitHub Codespaces. |
 | **Interactive Dashboard** | `app.py` | Browser-based Streamlit scientific dashboard. |
@@ -37,16 +37,22 @@
 ## 3. One-Click Cloud Evaluation Instructions
 
 To reproduce the complete benchmark in a clean environment without installing any software locally:
+
 1. Open the repository in **GitHub Codespaces**.
 2. Run headless execution from the terminal:
+
    ```bash
    python main.py
    ```
+
 3. Run the automated test suite:
+
    ```bash
    pytest tests/ -v
    ```
+
 4. (Optional) Launch the interactive dashboard:
+
    ```bash
    streamlit run app.py
    ```

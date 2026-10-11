@@ -1,7 +1,7 @@
 # FloquetSim Explorer: Geometry-Aware Quantum Simulation & Trotter-Noise Benchmark
 
 [![SRM University-AP Qiskit Fall Fest 2026](https://img.shields.io/badge/SRM%20University--AP-Qiskit%20Fall%20Fest%202026-blue)](https://srmap.edu.in)
-[![Track S3](https://img.shields.io/badge/Track-S3%3A%20Noise%20in%20Trotter%20Simulation-purple)](#)
+[![Track S3](https://img.shields.io/badge/Track-S3%3A%20Noise%20in%20Trotter%20Simulation-purple)](https://qiskit.org)
 [![Qiskit Version](https://img.shields.io/badge/Qiskit-1.x%20Ready-613380)](https://qiskit.org)
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://github.com/codespaces/new)
 
@@ -13,34 +13,35 @@
 
 > **[PROVISIONAL DEMONSTRATION TOPOLOGY (NON-OFFICIAL)]**  
 > Standalone official `processor_A.json` and `processor_B.json` files were not provided in the public competition distribution kit. In accordance with Section 11 of Master Specification v1.2, this repository utilizes **Provisional Demonstration Topologies** (`demo_processor_A.json` and `demo_processor_B.json`) strictly conforming to the organizer JSON schema.
-> 
+>
 > The hardware loader automatically checks for official `processor_A.json` and `processor_B.json` first; if present, they are loaded seamlessly. When demonstration fixtures are active, all outputs display this disclaimer. Zero claims are made that these configurations represent physical IBM device calibrations.
 
 ---
 
 ## Table of Contents
 
-1. [Executive Summary](#executive-summary)
-2. [Core Research Question & Hypotheses](#core-research-question--hypotheses)
-3. [Physical Model & Hamiltonian Formulation](#physical-model--hamiltonian-formulation)
-4. [Lie-Trotter Product Formula Discretization](#lie-trotter-product-formula-discretization)
-5. [Processor Topologies & Routing Realities](#processor-topologies--routing-realities)
-6. [System Architecture](#system-architecture)
-7. [Repository Layout](#repository-layout)
-8. [Zero-Install Cloud Quickstart (GitHub Codespaces)](#zero-install-cloud-quickstart-github-codespaces)
-9. [Headless CLI Execution Guide](#headless-cli-execution-guide)
-10. [Interactive Streamlit Dashboard [PLANNED]](#interactive-streamlit-dashboard-planned)
-11. [Testing & Scientific Verification](#testing--scientific-verification)
-12. [Project Lifecycle Status](#project-lifecycle-status)
-13. [Scientific Limitations & Ethical Boundaries](#scientific-limitations--ethical-boundaries)
-14. [AI-Assistance Disclosure](#ai-assistance-disclosure)
-15. [References](#references)
+1. [Executive Summary](#1-executive-summary)
+2. [Core Research Question & Hypotheses](#2-core-research-question--hypotheses)
+3. [Physical Model & Hamiltonian Formulation](#3-physical-model--hamiltonian-formulation)
+4. [Lie-Trotter Product Formula Discretization](#4-lie-trotter-product-formula-discretization)
+5. [Processor Topologies & Routing Realities](#5-processor-topologies--routing-realities)
+6. [System Architecture](#6-system-architecture)
+7. [Repository Layout](#7-repository-layout)
+8. [Zero-Install Cloud Quickstart (GitHub Codespaces)](#8-zero-install-cloud-quickstart-github-codespaces)
+9. [Headless CLI Execution Guide](#9-headless-cli-execution-guide)
+10. [Interactive Streamlit Dashboard](#10-interactive-streamlit-dashboard)
+11. [Testing & Scientific Verification](#11-testing--scientific-verification)
+12. [Project Lifecycle Status](#12-project-lifecycle-status)
+13. [Scientific Limitations & Ethical Boundaries](#13-scientific-limitations--ethical-boundaries)
+14. [AI-Assistance Disclosure](#14-ai-assistance-disclosure)
+15. [References](#15-references)
 
 ---
 
 ## 1. Executive Summary
 
 When simulating interacting quantum many-body systems on noisy intermediate-scale quantum (NISQ) processors, algorithms face a fundamental tension:
+
 - **Trotter Approximation Error:** Discretizing continuous time evolution through Lie-Trotter product formulas requires increasing the step count $m$ to reduce mathematical discretization error ($\mathcal{O}(t^2/m)$).
 - **Physical Hardware Noise:** Real quantum processors suffer from gate infidelities and decoherence. Increasing $m$ linearly inflates circuit depth and two-qubit gate counts, compounding physical noise.
 - **Topological Routing Overhead:** Physical processors have sparse, constrained qubit coupling graphs. Interacting logical qubits that are physically separated require compiler-inserted SWAP gates (each adding 3 CNOTs), accelerating state degradation.
@@ -51,10 +52,12 @@ When simulating interacting quantum many-body systems on noisy intermediate-scal
 
 ## 2. Core Research Question & Hypotheses
 
-### Primary Research Question:
+### Primary Research Question
+
 > *How does quantum processor coupling topology govern the competing trade-off between Trotter discretization error and physical gate noise accumulation in quantum spin chain simulations?*
 
-### Falsifiable Scientific Hypotheses:
+### Falsifiable Scientific Hypotheses
+
 - **Hypothesis H1 (Error Competition):** As Trotter steps $m$ increase, ideal Trotter error converges toward zero asymptotically; in the presence of physical gate noise, total simulation error balances decaying mathematical error against growing physical decoherence, which may produce a non-monotonic error profile across $m \in [1, 5]$.
 - **Hypothesis H2 (Topological Routing Overhead):** Compiling an identical 4-spin closed-boundary Hamiltonian onto Processor A (5-qubit line) versus Processor B (7-qubit heavy-hex ring) induces measurable variations in circuit depth, CNOT count, and inserted SWAP overhead due to differing graph diameters and alternative routing pathways.
 
@@ -65,6 +68,7 @@ When simulating interacting quantum many-body systems on noisy intermediate-scal
 The simulated physical system is a 4-spin quantum chain ($N=4$, Hilbert space dimension $2^4 = 16$) governed by an interacting Transverse-Field Ising Model (TFIM) under continuous quench evolution:
 $$H = H_{ZZ} + H_X + H_Z$$
 where all parameters share consistent angular frequency units ($\text{rad}\cdot\text{s}^{-1}$ with $\hbar = 1$):
+
 - **Ising Interaction:** $H_{ZZ} = J \sum_{j=0}^{2} Z_j Z_{j+1} + J Z_3 Z_0$ with $J = 1.0\,\text{rad/s}$ (closed periodic boundary).
 - **Transverse Field & Imperfection:** $H_X = \sum_{j=0}^{3} (h_x + \delta h_x^j) X_j$ with $h_x = 1.0\,\text{rad/s}$, $\delta h_x = 0.05\,\text{rad/s}$.
 - **Longitudinal Field:** $H_Z = h_z \sum_{j=0}^{3} Z_j$ with $h_z = 0.1\,\text{rad/s}$.
@@ -88,7 +92,7 @@ $$\| U_{\text{Trotter}}(m, t) - U_{\text{exact}}(t) \| \le \frac{C t^2}{m} \quad
 
 ## 5. Processor Topologies & Routing Realities
 
-```
+```text
 PROCESSOR A (5-Qubit Linear Chain):
   (0) ─── (1) ─── (2) ─── (3) ─── (4)
 
@@ -110,7 +114,7 @@ PROCESSOR B (7-Qubit Heavy-Hex-Inspired):
 
 FloquetSim Explorer decouples the scientific execution core from presentation layers:
 
-```
+```text
                       ┌──────────────────────────────────────────────┐
                       │          GitHub Codespaces Container         │
                       │          (Python 3.10 / 2-Core VM)           │
@@ -146,7 +150,7 @@ FloquetSim Explorer decouples the scientific execution core from presentation la
 
 ## 7. Repository Layout
 
-```
+```text
 FloquetSim-Explorer/
 ├── .devcontainer/
 │   └── devcontainer.json         # 1-click cloud container setup (Codespaces)
@@ -202,6 +206,7 @@ To preserve the host laptop's 512 GB SSD limit, this project runs entirely insid
 1. Click **Code** $\to$ **Codespaces** $\to$ **Create codespace on main**.
 2. The `.devcontainer` automatically provisions Python 3.10, installs `requirements.txt`, and prepares the environment in $< 90$ seconds.
 3. Open a cloud terminal and execute the headless benchmark:
+
    ```bash
    python main.py
    ```
@@ -220,7 +225,8 @@ python main.py
 python main.py --trotter-steps 1,2,3,4,5 --time 5.0 --shots 2048 --seed 42 --output-dir results/
 ```
 
-### Outputs Generated:
+### Outputs Generated
+
 - `results/tables/circuit_metrics_comparison.csv`
 - `results/tables/trotter_sweep_results.csv`
 - `results/tables/time_evolution_results.csv`
@@ -235,9 +241,11 @@ python main.py --trotter-steps 1,2,3,4,5 --time 5.0 --shots 2048 --seed 42 --out
 ## 10. Interactive Streamlit Dashboard
 
 To launch the browser-based visualization dashboard:
+
 ```bash
 streamlit run app.py --server.headless=true --server.port=8501
 ```
+
 Codespaces automatically forwards port 8501 for instant browser preview.
 
 ---
@@ -245,9 +253,11 @@ Codespaces automatically forwards port 8501 for instant browser preview.
 ## 11. Testing & Scientific Verification
 
 The project includes an automated test suite executed via `pytest`:
+
 ```bash
 pytest tests/ -v
 ```
+
 - **Unitarity Check:** Validates exact solver $\det(U) = 1$, $U^\dagger U = I$ to $< 10^{-14}$.
 - **Trotter Convergence:** Verifies ideal Trotter error converges toward zero asymptotically as $m \to \infty$.
 - **Transpiler Determinism:** Asserts zero variance in depth, 2Q gates, and SWAP counts across repeated seeded runs.
@@ -269,11 +279,11 @@ pytest tests/ -v
 | **7** | Processor Loading & Circuit Transpilation | **PASSED** |
 | **8** | Noisy Simulation & Experimental Sweeps | **PASSED** |
 | **9** | Results Generation & Scientific Reporting | **PASSED** |
-| **10**| Core Testing & Validation Suite | **PASSED** |
-| **11**| Streamlit Scientific Dashboard (`app.py`) | **PASSED** |
-| **12**| End-to-End System Integration | **PASSED** |
-| **13**| Final Documentation & Academic Report | **PASSED** |
-| **14**| Submission Package Audit & Release | **PASSED** |
+| **10** | Core Testing & Validation Suite | **PASSED** |
+| **11** | Streamlit Scientific Dashboard (`app.py`) | **PASSED** |
+| **12** | End-to-End System Integration | **PASSED** |
+| **13** | Final Documentation & Academic Report | **PASSED** |
+| **14** | Submission Package Audit & Release | **PASSED** |
 
 ---
 

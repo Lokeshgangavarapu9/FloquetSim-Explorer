@@ -36,7 +36,7 @@ $$E_{\text{model}} = \{(0,1), (1,2), (2,3), (3,0)\}$$
 
 ## 3. Rigorous Graph Distance Analysis on Hardware Coupling Maps
 
-```
+```text
 PROCESSOR A (5-Qubit Linear Chain):
   (0) ─── (1) ─── (2) ─── (3) ─── (4)
 
@@ -49,6 +49,7 @@ PROCESSOR B (7-Qubit Heavy-Hex-Inspired):
 ```
 
 ### 3.1 Processor A (5-Qubit Line)
+
 - Physical Qubits: $\{0, 1, 2, 3, 4\}$.
 - Physical Edges: `{(0,1), (1,2), (2,3), (3,4)}`.
 - Logical mapping: $q_0 \to 0, q_1 \to 1, q_2 \to 2, q_3 \to 3$.
@@ -58,6 +59,7 @@ PROCESSOR B (7-Qubit Heavy-Hex-Inspired):
 - Processor A does not have a closed loop. Compiling the $Z_3 Z_0$ term requires routing SWAP gates.
 
 ### 3.2 Processor B (7-Qubit Ring + Branch)
+
 - Physical Qubits: $\{0, 1, 2, 3, 4, 5, 6\}$.
 - Physical Edges: `{(0,1), (1,2), (2,3), (3,4), (4,5), (5,0), (2,6)}`.
 - Cycle length (girth): $g = 6$ (a 6-node ring).

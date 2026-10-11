@@ -32,7 +32,8 @@ To reproduce the Hamiltonian unitary terms $\exp(-i \text{coeff} \cdot \Delta t 
 | **Ising Interaction Term** $\exp(-i J_{jk} \Delta t Z_j Z_k)$ | Two-qubit $R_{ZZ}$ gate on pair $(j, k)$ | $\theta_{ZZ}^{jk} = 2 J_{jk} \Delta t$ |
 | **Longitudinal Term** $\exp(-i h_z^j \Delta t Z_j)$ | Single-qubit $R_Z$ gate on qubit $j$ | $\theta_Z^j = 2 h_z^j \Delta t$ |
 
-### Basis Gate Decomposition of $R_{ZZ}(\theta)$:
+### Basis Gate Decomposition of $R_{ZZ}(\theta)$
+
 On physical architectures whose basis gate set is `['rz', 'sx', 'x', 'cx']`, each two-qubit $R_{ZZ}(\theta)$ interaction is decomposed natively into:
 $$R_{ZZ}(\theta)_{j,k} = \text{CX}(j, k) \cdot R_Z(\theta)_k \cdot \text{CX}(j, k)$$
 This introduces exactly two native CNOT gates per interacting spin pair per Trotter step.
@@ -48,7 +49,8 @@ In operator norm, this establishes the rigorous asymptotic bound:
 $$\| U_{\text{Trotter}}(m, t) - U_{\text{exact}}(t) \| \le \frac{C t^2}{m} \quad \text{as } m \to \infty$$
 where $C = \frac{1}{2} \| [H_X, H_{ZZ}] \| + \frac{1}{2} \| [H_X, H_Z] \|$.
 
-### Removal of Monotonicity Constraints:
+### Removal of Monotonicity Constraints
+
 - **Asymptotic Limit:** In the noiseless limit as $m \to \infty$, the simulation converges asymptotically to the exact unitary limit.
 - **Finite-Step Fluctuations:** For finite, small Trotter steps ($m \in [1, 5]$) and localized observables $\langle Z_0(t) \rangle$, the error curve is **not required to decrease monotonically** at every consecutive integer step. Destructive phase interference between non-commuting terms can produce non-monotonic ripples before reaching the asymptotic $1/m$ envelope.
 - Demanding strict per-step monotonic decrease is scientifically invalid and is formally rejected as an acceptance criterion.

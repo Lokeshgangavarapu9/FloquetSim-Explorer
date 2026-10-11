@@ -15,7 +15,8 @@ $$i \frac{d}{dt} |\psi(t)\rangle = H |\psi(t)\rangle$$
 The formal solution for any duration $t \ge 0$ is given by the unitary evolution operator:
 $$U_{\text{exact}}(t) = \exp(-i H t)$$
 
-### Unitarity Verification:
+### Unitarity Verification
+
 Because $H$ is Hermitian ($H^\dagger = H$):
 $$U_{\text{exact}}(t)^\dagger U_{\text{exact}}(t) = \exp(i H t) \exp(-i H t) = \mathbb{I}_{16}$$
 $$\det(U_{\text{exact}}(t)) = \exp(-i \text{Tr}(H) t) = 1 \quad (\text{since } \text{Tr}(X) = \text{Tr}(Z) = 0 \implies \text{Tr}(H) = 0)$$
@@ -27,7 +28,9 @@ Probability norm is strictly conserved: $\langle \psi(t) | \psi(t) \rangle = \la
 
 To study the dynamical behavior of the quantum spin chain, the continuous trajectory is sampled at discrete stroboscopic observation intervals $t_n$:
 $$t_n = n \cdot \tau, \quad n \in \{1, 2, \dots, N_{\text{cycles}}\}$$
+
 where:
+
 - Stroboscopic sampling interval: $\tau = 1.0\,\text{s}$ (scaled time unit matching $1/J$).
 - Observation window: $N_{\text{cycles}} = 10$ points (time horizon $t \in [1.0, 10.0]\,\text{s}$).
 
@@ -39,6 +42,7 @@ $$|\psi_{\text{exact}}(n)\rangle = \left[ U_{\text{exact}}(\tau) \right]^n |\psi
 ## 3. Relation to Lie-Trotter Approximation
 
 When implementing this evolution on a digital quantum computer:
+
 - For any target observation time $t$, the evolution is divided into $m$ Lie-Trotter discretization steps, each of duration $\Delta t = t / m$.
 - The quantum circuit synthesizes:
   $$U_{\text{Trotter}}(m, t) = \left[ U_{\text{step}}(\Delta t) \right]^m$$
